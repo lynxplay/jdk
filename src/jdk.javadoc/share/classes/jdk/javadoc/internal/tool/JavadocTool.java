@@ -104,6 +104,9 @@ public class JavadocTool extends com.sun.tools.javac.main.JavaCompiler {
             // force the use of Javadoc's own enter phase
             JavadocEnter.preRegister(context);
 
+            // force the use of javadocs own annotation resolver.
+            JavadocAnnotations.preRegister(context);
+
             // force the use of Javadoc's own member enter phase
             JavadocMemberEnter.preRegister(context);
 

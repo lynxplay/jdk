@@ -130,7 +130,7 @@ public class TypeAnnotations {
         annotate.afterTypes(() -> {
             JavaFileObject oldSource = log.useSource(env.toplevel.sourcefile);
             try {
-                new TypeAnnotationPositions(true).scan(tree);
+                newPositionsScanner(true).scan(tree);
             } finally {
                 log.useSource(oldSource);
             }
@@ -153,7 +153,17 @@ public class TypeAnnotations {
      * top-level blocks, and method bodies, and should be called from Attr.
      */
     public void organizeTypeAnnotationsBodies(JCClassDecl tree) {
-        new TypeAnnotationPositions(false).scan(tree);
+        newPositionsScanner(false).scan(tree);
+    }
+
+    /**
+     * Constructs a new type annotation positions instance.
+     *
+     * @param signOnly whether the position scanner should produces signatures only.
+     * @return the created instance.
+     */
+    protected TypeAnnotationPositions newPositionsScanner(final boolean signOnly) {
+        return new TypeAnnotationPositions(signOnly);
     }
 
     public enum AnnotationType { DECLARATION, TYPE, NONE, BOTH }
@@ -261,11 +271,11 @@ public class TypeAnnotations {
         return AnnotationType.NONE;
     }
 
-    private class TypeAnnotationPositions extends TreeScanner {
+    protected class TypeAnnotationPositions extends TreeScanner {
 
         private final boolean sigOnly;
 
-        TypeAnnotationPositions(boolean sigOnly) {
+        protected TypeAnnotationPositions(boolean sigOnly) {
             this.sigOnly = sigOnly;
         }
 
@@ -305,7 +315,7 @@ public class TypeAnnotations {
          * we never build an JCAnnotatedType. This step finds these
          * annotations and marks them as if they were part of the type.
          */
-        private void separateAnnotationsKinds(JCTree pos, JCTree typetree, Type type,
+        protected void separateAnnotationsKinds(JCTree pos, JCTree typetree, Type type,
                                               Symbol sym, TypeAnnotationPosition typeAnnotationPosition)
         {
             List<Attribute.Compound> allAnnotations = sym.getRawAttributes();
