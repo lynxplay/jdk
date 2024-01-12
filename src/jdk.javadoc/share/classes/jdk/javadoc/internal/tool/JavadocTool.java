@@ -95,7 +95,7 @@ public class JavadocTool extends com.sun.tools.javac.main.JavaCompiler {
     /**
      * Construct a new javadoc tool.
      */
-    public static JavadocTool make0(Context context) {
+    public static JavadocTool make0(Context context, ToolOptions options) {
         JavadocLog log = null;
         try {
             // force the use of Javadoc's class finder
@@ -105,7 +105,7 @@ public class JavadocTool extends com.sun.tools.javac.main.JavaCompiler {
             JavadocEnter.preRegister(context);
 
             // force the use of javadocs own annotation resolver.
-            JavadocAnnotations.preRegister(context);
+            JavadocAnnotations.preRegister(context, options);
 
             // force the use of Javadoc's own member enter phase
             JavadocMemberEnter.preRegister(context);

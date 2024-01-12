@@ -561,7 +561,7 @@ public class Start {
             }
         }
 
-        JavadocTool comp = JavadocTool.make0(context);
+        JavadocTool comp = JavadocTool.make0(context, options);
         if (comp == null) return ABNORMAL;
 
         DocletEnvironment docEnv = comp.getEnvironment(options, javaNames, fileObjects);

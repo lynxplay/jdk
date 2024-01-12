@@ -146,6 +146,12 @@ public class ToolOptions {
     private boolean xclasses = false;
 
     /**
+     * Option to deduplicate annotations on types for annotations
+     * that act both as a type annotation and as a declarative annotation.
+     */
+    private boolean deduplicateAnnotations = false;
+
+    /**
      * Options to be given to the file manager, such as path options
      * indicating where to find files to be documented.
      */
@@ -557,6 +563,13 @@ public class ToolOptions {
                 }
             },
 
+            new ToolOption("--deduplicate-annotations", HIDDEN) {
+                @Override
+                public void process() {
+                    deduplicateAnnotations = true;
+                }
+            },
+
             // ----- help options -----
 
             new ToolOption("--help -help -? -h", STANDARD) {
@@ -819,6 +832,8 @@ public class ToolOptions {
     Map<Option, String> fileManagerOptions() {
         return fileManagerOpts;
     }
+
+    boolean deduplicateAnnotations() { return deduplicateAnnotations; }
     //</editor-fold>
 
     /**

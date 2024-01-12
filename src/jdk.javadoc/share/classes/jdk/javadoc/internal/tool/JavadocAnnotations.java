@@ -12,12 +12,15 @@ import com.sun.tools.javac.util.List;
 
 public class JavadocAnnotations extends TypeAnnotations {
 
-    public static void preRegister(final Context context) {
-        context.put(typeAnnosKey, (Context.Factory<TypeAnnotations>) JavadocAnnotations::new);
+    public static void preRegister(final Context context, final ToolOptions options) {
+        context.put(typeAnnosKey, (Context.Factory<TypeAnnotations>) c -> new JavadocAnnotations(c, options));
     }
 
-    protected JavadocAnnotations(final Context context) {
+    private final ToolOptions options;
+
+    protected JavadocAnnotations(final Context context, final ToolOptions options) {
         super(context);
+        this.options = options;
     }
 
     @Override
@@ -46,27 +49,29 @@ public class JavadocAnnotations extends TypeAnnotations {
                                                 final TypeAnnotationPosition typeAnnotationPosition) {
             super.separateAnnotationsKinds(pos, typetree, type, sym, typeAnnotationPosition);
 
-            // Collect the existing type attributes as defined on the typetree passed to the method.
-            final List<Attribute.TypeCompound> typeAttributes = typetree.type != null ? typetree.type.getMetadata(
+            if (JavadocAnnotations.this.options.deduplicateAnnotations()) {
+                // Collect the existing type attributes as defined on the typetree passed to the method.
+                final List<Attribute.TypeCompound> typeAttributes = typetree.type != null ? typetree.type.getMetadata(
                     TypeMetadata.Annotations.class, a -> a.annotationBuffer().toList(), List.nil()
-            ) : List.nil();
+                ) : List.nil();
 
-            List<Attribute.Compound> filteredDeclarationAttributues = List.nil();
+                List<Attribute.Compound> filteredDeclarationAttributues = List.nil();
 
-            // Filter the declaration attributes, only adding those to the "remaining" list that do not have
-            // a duplicate type in the fetched type attributes found in the tree type.
-            outer:
-            for (final Attribute.Compound declarationAttribute : sym.getDeclarationAttributes()) {
-                for (final Attribute.TypeCompound typeAttribute : typeAttributes) {
-                    if (typeAttribute.type.equals(declarationAttribute.type)) continue outer;
+                // Filter the declaration attributes, only adding those to the "remaining" list that do not have
+                // a duplicate type in the fetched type attributes found in the tree type.
+                outer:
+                for (final Attribute.Compound declarationAttribute : sym.getDeclarationAttributes()) {
+                    for (final Attribute.TypeCompound typeAttribute : typeAttributes) {
+                        if (typeAttribute.type.equals(declarationAttribute.type)) continue outer;
+                    }
+
+                    filteredDeclarationAttributues = filteredDeclarationAttributues.append(declarationAttribute);
                 }
 
-                filteredDeclarationAttributues = filteredDeclarationAttributues.append(declarationAttribute);
+                // Write the now filter list of declaration annotations.
+                sym.resetAnnotations();
+                sym.setDeclarationAttributes(filteredDeclarationAttributues);
             }
-
-            // Write the now filter list of declaration annotations.
-            sym.resetAnnotations();
-            sym.setDeclarationAttributes(filteredDeclarationAttributues);
         }
     }
 }
